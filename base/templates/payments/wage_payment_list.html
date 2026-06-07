@@ -1,0 +1,183 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Wage Payments - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Wage Payments</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Wage Payments</h1>
+                <p class="text-muted">Track worker payments for {{ project.title }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if request.GET.status == status_value %}selected{% endif %}>
+                                {{ status_label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Worker</th>
+                                <th>Period</th>
+                                <th>Days</th>
+                                <th>Wage/Day</th>
+                                <th>Total Amount</th>
+                                <th>Paid Amount</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Payment Ref</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ payment.project_worker.worker.full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ payment.project_worker.worker.get_worker_type_display }}</small>
+                                </td>
+                                <td>
+                                    {{ payment.period_start|date:"M d" }} - {{ payment.period_end|date:"M d, Y" }}
+                                </td>
+                                <td>{{ payment.total_days|floatformat:1 }}</td>
+                                <td>₹{{ payment.wage_per_day|floatformat:2 }}</td>
+                                <td>₹{{ payment.total_amount|floatformat:2 }}</td>
+                                <td>₹{{ payment.paid_amount|floatformat:2 }}</td>
+                                <td>
+                                    <strong class="{% if payment.total_amount > payment.paid_amount %}text-danger{% else %}text-success{% endif %}">
+                                        ₹{{ payment.total_amount|add:payment.paid_amount|negate|floatformat:2 }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if payment.status == 'PAID' %}success{% elif payment.status == 'PENDING' %}warning{% else %}secondary{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ payment.payment_reference|default:"-" }}
+                                    {% if payment.paid_at %}
+                                    <br>
+                                    <small class="text-muted">{{ payment.paid_at|date:"M d, Y" }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <i class="fas fa-money-bill-wave fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted">No payment records found.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Summary Cards -->
+                {% if payments %}
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <strong>Total Payments:</strong><br>
+                            ₹{{ payments|sum_attribute:'total_amount'|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-success">
+                            <strong>Total Paid:</strong><br>
+                            ₹{{ payments|sum_attribute:'paid_amount'|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-warning">
+                            <strong>Pending Balance:</strong><br>
+                            ₹{{ payments|sum_attribute:'remaining'|floatformat:2 }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                Next
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Helper for sum_attribute filter (add to templatetags or use this approach)
+// For now, calculate in view or create a template filter
+</script>
+{% endblock %}

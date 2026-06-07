@@ -1,0 +1,130 @@
+/* Responsive Styles for Archify Platform */
+
+/* Tablet Devices */
+@media (max-width: 768px) {
+    /* Typography */
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    /* Cards */
+    .stat-card {
+        margin-bottom: 15px;
+    }
+    
+    /* Tables */
+    .table-responsive {
+        font-size: 12px;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Forms */
+    .form-control, .form-select {
+        font-size: 14px;
+    }
+}
+
+/* Mobile Devices */
+@media (max-width: 576px) {
+    /* Layout */
+    .container-fluid {
+        padding: 15px !important;
+    }
+    
+    /* Typography */
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
+    h3 {
+        font-size: 1.1rem;
+    }
+    
+    /* Cards */
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Tables */
+    .table thead th {
+        font-size: 11px;
+        padding: 8px;
+    }
+    
+    .table tbody td {
+        font-size: 11px;
+        padding: 8px;
+    }
+    
+    /* Buttons */
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Forms */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    /* Dashboard Stats */
+    .stat-card {
+        text-align: center;
+    }
+    
+    /* Modals */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .page-link {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Large Screens */
+@media (min-width: 1200px) {
+    .container-fluid {
+        max-width: 95%;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+    }
+}

@@ -1,0 +1,219 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Materials - Archify{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Materials Catalog</h1>
+                <p class="text-muted">Manage construction materials and their units</p>
+            </div>
+            {% if user.role in 'ADMIN,CONTRACTOR' %}
+            <a href="{% url 'material_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Material
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <i class="fas fa-boxes fa-2x text-primary mb-2"></i>
+            <h3>{{ total_materials }}</h3>
+            <p class="text-muted mb-0">Total Materials</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <i class="fas fa-tag fa-2x text-success mb-2"></i>
+            <h3>{{ materials|length }}</h3>
+            <p class="text-muted mb-0">Displaying</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+            <h3>{{ page_obj.paginator.num_pages }}</h3>
+            <p class="text-muted mb-0">Pages</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search materials by name..." value="{{ search_query }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Materials Grid -->
+<div class="row">
+    {% for material in materials %}
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="material-icon mb-3">
+                    <i class="fas fa-cube fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">{{ material.name }}</h5>
+                <p class="card-text">
+                    <span class="badge bg-secondary">Unit: {{ material.unit }}</span>
+                </p>
+                <p class="text-muted small">{{ material.description|default:"No description"|truncatewords:15 }}</p>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-info"
+                        onclick="showMaterialDetails('{{ material.name|escapejs }}', '{{ material.unit }}', '{{ material.description|escapejs }}')">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    {% if user.role in 'ADMIN,CONTRACTOR' %}
+                    <a href="{% url 'material_update' material.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'material_delete' material.pk %}" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Are you sure you want to delete " {{ material.name }}"? This action
+                        cannot be undone.')">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-boxes fa-3x text-muted mb-3 d-block"></i>
+            <p class="text-muted">No materials found.</p>
+            {% if user.role in 'ADMIN,CONTRACTOR' %}
+            <a href="{% url 'material_create' %}" class="btn btn-primary">Add Your First Material</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                {{ num }}
+            </a>
+        </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Material Details Modal -->
+<div class="modal fade" id="materialDetailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Material Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-cube fa-4x text-primary"></i>
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%">Material Name</th>
+                        <td id="detailName">--</td>
+                    </tr>
+                    <tr>
+                        <th>Unit of Measurement</th>
+                        <td id="detailUnit">--</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td id="detailDescription">--</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .material-icon {
+        transition: transform 0.3s;
+    }
+
+    .material-icon:hover {
+        transform: scale(1.1);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script>
+    function showMaterialDetails(name, unit, description) {
+        document.getElementById('detailName').innerText = name;
+        document.getElementById('detailUnit').innerText = unit;
+        document.getElementById('detailDescription').innerText = description || 'No description available';
+
+        var modal = new bootstrap.Modal(document.getElementById('materialDetailModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Site Updates - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Site Updates</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Site Updates</h1>
+                <p class="text-muted">Track daily progress and site activities for {{ project.title }}</p>
+            </div>
+            {% if can_edit %}
+            <a href="{% url 'site_update_create' project.id %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Post Update
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Updates Feed -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        {% for update in updates %}
+        <div class="card mb-4 fade-in">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">{{ update.title }}</h5>
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i> {{ update.posted_by.get_full_name|default:update.posted_by.username }}
+                        <i class="fas fa-calendar-alt ms-2 me-1"></i> {{ update.update_date|date:"F d, Y" }}
+                    </small>
+                </div>
+                {% if update.progress_percent %}
+                <span class="badge bg-primary">{{ update.progress_percent }}% Complete</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ update.description|linebreaks }}</p>
+                
+                {% if update.weather_note %}
+                <div class="alert alert-info mt-2 py-2">
+                    <i class="fas fa-cloud-sun me-2"></i> Weather: {{ update.weather_note }}
+                </div>
+                {% endif %}
+                
+                {% if update.milestone %}
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-flag-checkered me-1"></i> Related Milestone: {{ update.milestone.title }}
+                    </small>
+                </div>
+                {% endif %}
+                
+                <!-- Images -->
+                {% if update.images.all %}
+                <div class="row mt-3">
+                    {% for image in update.images.all|slice:":4" %}
+                    <div class="col-md-3 col-6 mb-2">
+                        <a href="{{ image.image.url }}" target="_blank">
+                            <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
+                        </a>
+                        {% if image.caption %}
+                        <small class="text-muted d-block text-center">{{ image.caption|truncatechars:20 }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i> Posted {{ update.created_at|timesince }} ago
+                    </small>
+                    {% if not update.is_visible_to_client %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-eye-slash me-1"></i> Client Not Visible
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-hard-hat fa-3x text-muted mb-3 d-block"></i>
+            <p class="text-muted">No site updates yet.</p>
+            {% if can_edit %}
+            <a href="{% url 'site_update_create' project.id %}" class="btn btn-primary">Post First Update</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .fade-in {
+        animation: fadeInUp 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

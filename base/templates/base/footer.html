@@ -1,0 +1,86 @@
+<!-- Footer -->
+<footer class="bg-white mt-4 py-4 px-4 rounded shadow-sm">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-hard-hat fa-2x text-primary"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Archify</h6>
+                        <small class="text-muted">Construction Management Platform</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="d-flex flex-column flex-md-row justify-content-md-end gap-3">
+                    <div>
+                        <small class="text-muted d-block">
+                            <i class="fas fa-copyright me-1"></i> 2026 Archify
+                        </small>
+                        <small class="text-muted">Version 1.0</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="text-muted" data-bs-toggle="tooltip" title="About">
+                            <i class="fas fa-info-circle"></i>
+                        </a>
+                        <a href="#" class="text-muted" data-bs-toggle="tooltip" title="Help">
+                            <i class="fas fa-question-circle"></i>
+                        </a>
+                        <a href="#" class="text-muted" data-bs-toggle="tooltip" title="Contact">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="#" class="text-muted" data-bs-toggle="tooltip" title="Privacy Policy">
+                            <i class="fas fa-shield-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <small class="text-muted">
+                    <i class="fas fa-code-branch me-1"></i> Built by GURUKIRAN C S | 
+                    <i class="fas fa-heart text-danger mx-1"></i> Made for Construction Professionals
+                </small>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    footer {
+        border-top: 1px solid #e9ecef;
+        margin-top: auto;
+    }
+    
+    footer .text-muted:hover {
+        color: #1a1a2e !important;
+        transition: color 0.3s ease;
+    }
+    
+    footer a {
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    footer a:hover {
+        color: #1a1a2e !important;
+    }
+    
+    @media (max-width: 768px) {
+        footer {
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>

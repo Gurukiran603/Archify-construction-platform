@@ -1,0 +1,596 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archify - Premium Construction Management Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
+            color: white;
+            padding: 120px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' fill-opacity='0.05' d='M0,50 L100,0 L100,100 L0,100 Z'/%3E%3C/svg%3E");
+            background-size: cover;
+        }
+        
+        .hero-section .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .hero-section h1 span {
+            color: #c9a03d;
+        }
+        
+        .hero-section .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Feature Cards */
+        .feature-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #1a472a, #2d5a3f);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.05) rotate(5deg);
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #c9a03d;
+        }
+        
+        /* How It Works */
+        .step-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #1a472a;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        /* Testimonials */
+        .testimonial-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #1a472a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .testimonial-avatar i {
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .rating {
+            color: #c9a03d;
+            margin: 15px 0;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #c9a03d, #a67c00);
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .btn-custom {
+            background: #1a472a;
+            color: white;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            background: #0d2818;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            border: 2px solid white;
+            color: white;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        
+        .btn-outline-custom:hover {
+            background: white;
+            color: #1a472a;
+            transform: translateY(-2px);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0f172a;
+            color: white;
+            padding: 50px 0 30px;
+        }
+        
+        .footer a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer a:hover {
+            color: #c9a03d;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            .hero-section {
+                padding: 80px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#" style="font-size: 1.6rem; font-weight: 700;">
+                <i class="fas fa-hard-hat"></i> ARCHIFY
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="btn btn-warning ms-3" href="{% url 'login' %}" style="border-radius: 30px;">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-outline-light ms-2" href="{% url 'register' %}" style="border-radius: 30px;">Register</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" style="margin-top: 76px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1>Build Your Dream <span>With Archify</span></h1>
+                    <p class="lead mb-4">Complete Construction Management Platform for Professionals and Clients. Manage projects, track progress, and collaborate seamlessly.</p>
+                    <div>
+                        <a href="{% url 'register' %}" class="btn btn-custom me-3">Get Started <i class="fas fa-arrow-right ms-2"></i></a>
+                        <a href="#features" class="btn btn-outline-custom">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center d-none d-lg-block">
+                    <i class="fas fa-drafting-compass fa-6x" style="font-size: 250px; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-number">500+</div>
+                    <p>Projects Completed</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-number">200+</div>
+                    <p>Happy Clients</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-number">1000+</div>
+                    <p>Workers Managed</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-number">50+</div>
+                    <p>Expert Professionals</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Why Choose Archify?</h2>
+                <div class="mx-auto" style="width: 80px; height: 4px; background: #c9a03d; margin: 15px auto;"></div>
+                <p class="text-muted">Powerful features to streamline your construction projects</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-building fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mt-3">Project Management</h4>
+                        <p>Track projects from planning to completion with milestone tracking and progress monitoring.</p>
+                        <ul class="text-start mt-3">
+                            <li>Real-time progress tracking</li>
+                            <li>Milestone management</li>
+                            <li>Budget monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-users fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mt-3">Workforce Management</h4>
+                        <p>Manage workers, track attendance, and process wage payments efficiently.</p>
+                        <ul class="text-start mt-3">
+                            <li>Daily attendance tracking</li>
+                            <li>Automated wage calculation</li>
+                            <li>Worker assignment system</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-drafting-compass fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mt-3">Building Plans</h4>
+                        <p>Upload, review, and approve building plans with version control.</p>
+                        <ul class="text-start mt-3">
+                            <li>PDF/DWG upload support</li>
+                            <li>Version control system</li>
+                            <li>Approval workflow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">How Archify Works</h2>
+                <div class="mx-auto" style="width: 80px; height: 4px; background: #c9a03d; margin: 15px auto;"></div>
+                <p class="text-muted">Simple 4-step process to manage your construction projects</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <i class="fas fa-user-plus fa-2x text-primary mb-3"></i>
+                        <h5>Register & Login</h5>
+                        <p class="text-muted">Create your account and choose your role - Client, Architect, Engineer, or Contractor</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <i class="fas fa-building fa-2x text-primary mb-3"></i>
+                        <h5>Create Project</h5>
+                        <p class="text-muted">Clients create projects with budget, timeline, and requirements</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <i class="fas fa-drafting-compass fa-2x text-primary mb-3"></i>
+                        <h5>Design & Review</h5>
+                        <p class="text-muted">Architects upload plans, engineers review, and clients approve</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <i class="fas fa-tools fa-2x text-primary mb-3"></i>
+                        <h5>Construction & Track</h5>
+                        <p class="text-muted">Contractors manage workers, track attendance, and post updates</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roles Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Who Can Use Archify?</h2>
+                <div class="mx-auto" style="width: 80px; height: 4px; background: #c9a03d; margin: 15px auto;"></div>
+                <p class="text-muted">Complete solution for all construction stakeholders</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-user-tie fa-3x text-primary"></i>
+                        <h6 class="mt-2">Client</h6>
+                        <small class="text-muted">Project Owners</small>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-drafting-compass fa-3x text-success"></i>
+                        <h6 class="mt-2">Architect</h6>
+                        <small class="text-muted">Design Experts</small>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-hard-hat fa-3x text-warning"></i>
+                        <h6 class="mt-2">Engineer</h6>
+                        <small class="text-muted">Structural Experts</small>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-tools fa-3x text-info"></i>
+                        <h6 class="mt-2">Contractor</h6>
+                        <small class="text-muted">Builders</small>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-users fa-3x text-secondary"></i>
+                        <h6 class="mt-2">Worker</h6>
+                        <small class="text-muted">Workforce</small>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="p-3">
+                        <i class="fas fa-crown fa-3x text-danger"></i>
+                        <h6 class="mt-2">Admin</h6>
+                        <small class="text-muted">Supervisor</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">What Our Users Say</h2>
+                <div class="mx-auto" style="width: 80px; height: 4px; background: #c9a03d; margin: 15px auto;"></div>
+                <p class="text-muted">Trusted by construction professionals across India</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h5>Raju Shetty</h5>
+                        <p class="text-muted small">Client, Bangalore</p>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>"Archify made my house construction so easy! I could track everything online."</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h5>Rajesh Bhat</h5>
+                        <p class="text-muted small">Architect, Mysore</p>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>"Great platform for sharing plans with clients and getting instant feedback."</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h5>Srinivas Murthy</h5>
+                        <p class="text-muted small">Contractor, Hubli</p>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p>"Worker attendance and payment tracking has never been this easy!"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="fw-bold mb-3">Ready to Build Your Dream Project?</h2>
+            <p class="mb-4">Join thousands of satisfied customers using Archify</p>
+            <a href="{% url 'register' %}" class="btn btn-custom btn-lg">Get Started Now <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="fas fa-hard-hat me-2"></i>Archify</h5>
+                    <p class="text-white-50">Building tomorrow, today. Complete construction management platform for professionals and clients.</p>
+                    <div class="mt-3">
+                        <a href="#" class="me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="me-3"><i class="fab fa-linkedin fa-lg"></i></a>
+                        <a href="#"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6>Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Contact Info</h6>
+                    <ul class="list-unstyled text-white-50">
+                        <li><i class="fas fa-envelope me-2"></i> support@archify.com</li>
+                        <li><i class="fas fa-phone me-2"></i> +91 98765 43210</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i> Bangalore, Karnataka</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-white-50" style="opacity: 0.1;">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0 text-white-50 small">
+                        <i class="fas fa-copyright me-1"></i> 2026 Archify. Built with <i class="fas fa-heart text-danger"></i> by Gurukiran C S | Made for Construction Professionals
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

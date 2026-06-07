@@ -1,0 +1,155 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Milestones - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Milestones</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Project Milestones</h1>
+                <p class="text-muted">Track key phases and deadlines for {{ project.title }}</p>
+            </div>
+            {% if can_edit %}
+            <a href="{% url 'milestone_create' project.id %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Milestone
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Progress Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <h5 class="mb-0">Overall Project Progress</h5>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="progress bg-white bg-opacity-25" style="height: 10px;">
+                            <div class="progress-bar bg-white" style="width: {{ project.progress_percent }}%"></div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>{{ project.progress_percent }}% Complete</strong>
+                            <br>
+                            <small>{{ milestones|length }} Total Milestones</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Milestones Timeline -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="timeline">
+                    {% for milestone in milestones %}
+                    <div class="timeline-item mb-4 {% if milestone.is_completed %}completed{% endif %}">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="timeline-marker rounded-circle bg-{% if milestone.is_completed %}success{% else %}secondary{% endif %} p-2" 
+                                     style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-{% if milestone.is_completed %}check{% else %}flag-checkered{% endif %} text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                                    <div>
+                                        <h5 class="mb-1">{{ milestone.title }}</h5>
+                                        <p class="text-muted mb-2">{{ milestone.description|default:"No description provided" }}</p>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-{% if milestone.is_completed %}success{% else %}warning{% endif %} mb-2">
+                                            {% if milestone.is_completed %}Completed{% else %}In Progress{% endif %}
+                                        </span>
+                                        {% if can_edit %}
+                                        <a href="{% url 'milestone_update' milestone.id %}" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            <strong>Planned:</strong> 
+                                            {{ milestone.planned_start_date|date:"M d, Y"|default:"Not set" }} - 
+                                            {{ milestone.planned_end_date|date:"M d, Y"|default:"Not set" }}
+                                        </small>
+                                    </div>
+                                    {% if milestone.actual_start_date or milestone.actual_end_date %}
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            <strong>Actual:</strong>
+                                            {{ milestone.actual_start_date|date:"M d, Y"|default:"Not started" }} - 
+                                            {{ milestone.actual_end_date|date:"M d, Y"|default:"In progress" }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if not milestone.is_completed and milestone.progress_percent > 0 %}
+                                <div class="mt-2">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small>Progress</small>
+                                        <small>{{ milestone.progress_percent }}%</small>
+                                    </div>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" style="width: {{ milestone.progress_percent }}%"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                    <div class="timeline-connector ms-4 ps-2 mb-2">
+                        <i class="fas fa-arrow-down text-muted"></i>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-flag-checkered fa-3x text-muted mb-3 d-block"></i>
+                        <p class="text-muted">No milestones defined yet.</p>
+                        {% if can_edit %}
+                        <a href="{% url 'milestone_create' project.id %}" class="btn btn-primary">Create First Milestone</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-item.completed .timeline-marker {
+        background-color: #28a745;
+    }
+    
+    .timeline-connector {
+        margin-left: 18px;
+        padding-left: 10px;
+        border-left: 2px dashed #dee2e6;
+    }
+</style>
+{% endblock %}

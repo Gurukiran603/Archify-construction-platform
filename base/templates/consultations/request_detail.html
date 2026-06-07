@@ -1,0 +1,79 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Consultation Request #{{ consultation.id }} - Archify{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-comment me-2"></i>
+                    Consultation Request #{{ consultation.id }}
+                </h5>
+                <span class="badge bg-{% if consultation.status == 'PENDING' %}warning{% elif consultation.status == 'ACCEPTED' %}success{% elif consultation.status == 'REJECTED' %}danger{% elif consultation.status == 'COMPLETED' %}info{% else %}secondary{% endif %} fs-6">
+                    {{ consultation.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-user me-2"></i>Client:</strong><br>
+                        {{ consultation.client.get_full_name|default:consultation.client.username }}</p>
+                        
+                        <p><strong><i class="fas fa-briefcase me-2"></i>Professional:</strong><br>
+                        {{ consultation.professional.get_full_name|default:consultation.professional.username }}</p>
+                        
+                        <p><strong><i class="fas fa-tag me-2"></i>Category:</strong><br>
+                        {{ consultation.project_category.name|default:"General Consultation" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-calendar me-2"></i>Requested Date:</strong><br>
+                        {{ consultation.created_at|date:"F d, Y H:i" }}</p>
+                        
+                        {% if consultation.preferred_date %}
+                        <p><strong><i class="fas fa-calendar-alt me-2"></i>Preferred Date:</strong><br>
+                        {{ consultation.preferred_date|date:"F d, Y" }}</p>
+                        {% endif %}
+                        
+                        {% if consultation.responded_at %}
+                        <p><strong><i class="fas fa-reply me-2"></i>Responded On:</strong><br>
+                        {{ consultation.responded_at|date:"F d, Y H:i" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6><i class="fas fa-file-alt me-2"></i>Requirement Details:</h6>
+                    <div class="p-3 bg-light rounded">
+                        {{ consultation.requirement|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if consultation.response_message %}
+                <div class="mb-4">
+                    <h6><i class="fas fa-reply-all me-2"></i>Professional's Response:</h6>
+                    <div class="p-3 bg-success bg-opacity-10 rounded border-start border-success border-4">
+                        {{ consultation.response_message|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'consultation_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                    
+                    {% if user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR' and consultation.status == 'PENDING' %}
+                    <a href="{% url 'consultation_respond' consultation.id %}" class="btn btn-primary">
+                        <i class="fas fa-reply me-2"></i>Respond to Request
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

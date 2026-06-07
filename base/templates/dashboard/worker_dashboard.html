@@ -1,0 +1,173 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Worker Dashboard - Archify{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h2 class="mb-2">Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+            <p class="mb-0">Track your assignments, attendance, and payments</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <i class="fas fa-briefcase fa-3x text-primary mb-2"></i>
+                <h3>{{ active_assignments|length }}</h3>
+                <p class="text-muted mb-0">Active Assignments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <i class="fas fa-calendar-check fa-3x text-success mb-2"></i>
+                <h3>{{ attendance_percentage|default:0 }}%</h3>
+                <p class="text-muted mb-0">Attendance Rate</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center border-warning">
+            <div class="card-body">
+                <i class="fas fa-rupee-sign fa-3x text-warning mb-2"></i>
+                <h3>₹{{ total_earned|default:0|floatformat:0 }}</h3>
+                <p class="text-muted mb-0">Total Earned</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Assignments -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>My Active Assignments</h5>
+    </div>
+    <div class="card-body">
+        {% if active_assignments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Project</th>
+                            <th>Location</th>
+                            <th>Worker Type</th>
+                            <th>Daily Wage</th>
+                            <th>Start Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in active_assignments %}
+                        <tr>
+                            <td><strong>{{ assignment.project.title }}</strong></td>
+                            <td>{{ assignment.project.city }}, {{ assignment.project.state }}</td>
+                            <td>{{ assignment.worker.get_worker_type_display }}</td>
+                            <td>₹{{ assignment.custom_daily_wage|default:assignment.worker.daily_wage|floatformat:2 }}</td>
+                            <td>{{ assignment.start_date|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No active assignments.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Attendance -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Attendance</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Project</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in recent_attendance %}
+                                <tr>
+                                    <td>{{ att.attendance_date|date:"M d, Y" }}</td>
+                                    <td>{{ att.project_worker.project.title|truncatechars:25 }}</td>
+                                    <td>
+                                        <span class="badge {% if att.status == 'PRESENT' %}bg-success{% elif att.status == 'ABSENT' %}bg-danger{% elif att.status == 'HALF_DAY' %}bg-warning{% else %}bg-info{% endif %}">
+                                            {{ att.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No attendance records found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Payment History</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_payments %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock me-2"></i> Pending Payments: {{ pending_payments|length }}
+                    </div>
+                {% endif %}
+                
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments|slice:":5" %}
+                                <tr>
+                                    <td>{{ payment.period_start|date:"M Y" }}</td>
+                                    <td>{{ payment.project_worker.project.title|truncatechars:20 }}</td>
+                                    <td>₹{{ payment.paid_amount|floatformat:0 }}</td>
+                                    <td>
+                                        <span class="badge {% if payment.status == 'PAID' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ payment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No payment records found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

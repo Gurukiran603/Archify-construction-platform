@@ -1,0 +1,146 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Mark Attendance - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'attendance_list' %}">Attendance</a></li>
+                <li class="breadcrumb-item active">{{ project.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-2">Mark Attendance</h1>
+                <p class="text-muted">Project: <strong>{{ project.title }}</strong> | Date: {{ today|date:"F d, Y" }}</p>
+            </div>
+            <a href="{% url 'attendance_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Workers Assigned to {{ project.title }}</h5>
+            </div>
+            <div class="card-body">
+                {% if project_workers %}
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- NO hidden input for date - we'll use server-side date -->
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Worker Name</th>
+                                    <th>Type</th>
+                                    <th>Daily Wage</th>
+                                    <th>Status</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pw in project_workers %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ pw.worker.full_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ pw.worker.phone_number }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ pw.worker.get_worker_type_display }}</span>
+                                    </td>
+                                    <td>₹{{ pw.custom_daily_wage|default:pw.worker.daily_wage|floatformat:2 }}</td>
+                                    <td style="min-width: 150px;">
+                                        <select name="attendance_{{ pw.id }}" class="form-select form-select-sm">
+                                            <option value="">-- Select Status --</option>
+                                            <option value="PRESENT">✅ Present</option>
+                                            <option value="ABSENT">❌ Absent</option>
+                                            <option value="HALF_DAY">⏰ Half Day</option>
+                                            <option value="PAID_LEAVE">💰 Paid Leave</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="time" name="check_in_{{ pw.id }}" class="form-control form-control-sm" placeholder="09:00">
+                                    </td>
+                                    <td>
+                                        <input type="time" name="check_out_{{ pw.id }}" class="form-control form-control-sm" placeholder="17:00">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="notes_{{ pw.id }}" class="form-control form-control-sm" placeholder="Optional notes">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Present</strong> - Worker worked full day</li>
+                            <li><strong>Half Day</strong> - Worker worked half day</li>
+                            <li><strong>Paid Leave</strong> - Approved leave (wage paid)</li>
+                            <li><strong>Absent</strong> - No work, no payment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'attendance_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Attendance
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No workers assigned to this project.</p>
+                    <a href="{% url 'project_worker_assign' project.id %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Assign Workers First
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selects = document.querySelectorAll('select[name^="attendance_"]');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                const row = this.closest('tr');
+                const checkIn = row.querySelector('input[name^="check_in_"]');
+                const checkOut = row.querySelector('input[name^="check_out_"]');
+                
+                if (this.value === 'PRESENT') {
+                    if (!checkIn.value) checkIn.value = '09:00';
+                    if (!checkOut.value) checkOut.value = '17:00';
+                } else if (this.value === 'HALF_DAY') {
+                    if (!checkIn.value) checkIn.value = '09:00';
+                    if (!checkOut.value) checkOut.value = '13:00';
+                } else if (this.value === 'ABSENT') {
+                    checkIn.value = '';
+                    checkOut.value = '';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

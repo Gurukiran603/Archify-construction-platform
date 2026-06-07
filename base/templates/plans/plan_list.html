@@ -1,0 +1,151 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Building Plans - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Building Plans</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Building Plans</h1>
+                <p class="text-muted">Manage blueprints and construction documents for {{ project.title }}</p>
+            </div>
+            {% if can_upload_plans %}
+            <a href="{% url 'plan_upload' project.id %}" class="btn btn-primary">
+                <i class="fas fa-upload me-2"></i>Upload New Plan
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <select name="plan_type" class="form-select">
+                            <option value="">All Plan Types</option>
+                            {% for type_value, type_label in plan_types %}
+                            <option value="{{ type_value }}" {% if request.GET.plan_type == type_value %}selected{% endif %}>
+                                {{ type_label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for status_value, status_label in approval_statuses %}
+                            <option value="{{ status_value }}" {% if request.GET.status == status_value %}selected{% endif %}>
+                                {{ status_label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Plans Grid -->
+<div class="row">
+    {% for plan in plans %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="badge bg-secondary">{{ plan.get_plan_type_display }}</span>
+                <span class="badge bg-{% if plan.approval_status == 'APPROVED' %}success{% elif plan.approval_status == 'REJECTED' %}danger{% elif plan.approval_status == 'SUBMITTED' %}warning{% else %}secondary{% endif %}">
+                    {{ plan.get_approval_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ plan.title }}</h5>
+                <p class="card-text text-muted small">
+                    <i class="fas fa-code-branch me-1"></i> Version {{ plan.version }}
+                    <br>
+                    <i class="fas fa-user me-1"></i> Uploaded by {{ plan.uploaded_by.get_full_name|default:plan.uploaded_by.username }}
+                    <br>
+                    <i class="fas fa-calendar me-1"></i> {{ plan.created_at|date:"M d, Y" }}
+                </p>
+                {% if plan.client_notes %}
+                <div class="alert alert-info mt-2 p-2 small">
+                    <i class="fas fa-comment"></i> {{ plan.client_notes|truncatewords:20 }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="{{ plan.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="fas fa-download me-1"></i> Download
+                    </a>
+                    {% if user == project.architect or user == project.civil_engineer and plan.approval_status == 'SUBMITTED' %}
+                    <a href="{% url 'plan_approval' plan.id %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-check-double me-1"></i> Review
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-drafting-compass fa-3x text-muted mb-3 d-block"></i>
+            <p class="text-muted">No plans uploaded yet.</p>
+            {% if can_upload_plans %}
+            <a href="{% url 'plan_upload' project.id %}" class="btn btn-primary">Upload First Plan</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.plan_type %}&plan_type={{ request.GET.plan_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                Previous
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.plan_type %}&plan_type={{ request.GET.plan_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                {{ num }}
+            </a>
+        </li>
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.plan_type %}&plan_type={{ request.GET.plan_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                Next
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

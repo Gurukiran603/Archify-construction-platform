@@ -1,0 +1,118 @@
+{% load static %}
+<nav id="sidebar">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-hard-hat"></i> Archify</h3>
+        <p>Construction Management Platform</p>
+        {% if user.is_authenticated %}
+        <div class="mt-2">
+            <span class="badge bg-warning text-dark">{{ user.get_role_display|default:user.role }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <ul class="list-unstyled components">
+        {% if user.is_authenticated %}
+        <!-- Dashboard -->
+        <li
+            class="{% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+
+        <!-- Projects Section -->
+        <li>
+            <a href="#projectsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-building"></i> Projects
+            </a>
+            <ul class="collapse list-unstyled" id="projectsSubmenu">
+                <li><a href="{% url 'project_list' %}"><i class="fas fa-list"></i> All Projects</a></li>
+                {% if user.role == 'CLIENT' %}
+                <li><a href="{% url 'project_create' %}"><i class="fas fa-plus"></i> New Project</a></li> 
+                {% endif %}
+            </ul>
+        </li>
+
+        <!-- Workers Section (Visible to Admin, Contractor) -->
+        {% if user.role in 'ADMIN,CONTRACTOR' %}
+        <li>
+            <a href="#workersSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-users"></i> Workers
+            </a>
+            <ul class="collapse list-unstyled" id="workersSubmenu">
+                <li><a href="{% url 'worker_list' %}"><i class="fas fa-list"></i> All Workers</a></li>
+                <li><a href="{% url 'worker_create' %}"><i class="fas fa-user-plus"></i> Add Worker</a></li>
+            </ul>
+        </li>
+        {% endif %}
+
+        <!-- Materials -->
+        <li>
+            <a href="{% url 'material_list' %}">
+                <i class="fas fa-boxes"></i> Materials
+            </a>
+        </li>
+
+        <!-- Consultations -->
+        {% if user.role in 'CLIENT,ARCHITECT,CIVIL_ENGINEER' %}
+        <li>
+            <a href="#consultationsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-comments"></i> Consultations
+            </a>
+            <ul class="collapse list-unstyled" id="consultationsSubmenu">
+                <li><a href="{% url 'consultation_list' %}"><i class="fas fa-list"></i> All Requests</a></li>
+                {% if user.role == 'CLIENT' %}
+                <li><a href="{% url 'consultation_create' %}"><i class="fas fa-plus"></i> New Request</a></li>
+                {% endif %}
+            </ul>
+        </li>
+        {% endif %}
+
+        <!-- Attendance (Visible to Admin, Contractor) -->
+        {% if user.role in 'ADMIN,CONTRACTOR' %}
+        <li>
+            <a href="{% url 'attendance_list' %}">
+                <i class="fas fa-calendar-check"></i> Attendance
+            </a>
+        </li>
+        {% endif %}
+
+        <!-- Profile -->
+        <li>
+            <a href="#profileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-user-cog"></i> Profile
+            </a>
+            <ul class="collapse list-unstyled" id="profileSubmenu">
+                {% if user.role == 'CLIENT' %}
+                <li><a href="{% url 'client_profile' %}"><i class="fas fa-user"></i> My Profile</a></li>
+                {% elif user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR' %}
+                <li><a href="{% url 'professional_profile' %}"><i class="fas fa-briefcase"></i> Professional Profile</a>
+                </li>
+                {% endif %}
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </li>
+        {% else %}
+        <!-- Show login/register for non-authenticated users -->
+        <li>
+            <a href="{% url 'login' %}">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'register' %}">
+                <i class="fas fa-user-plus"></i> Register
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="sidebar-footer p-3">
+        <div class="text-center">
+            <small class="text-white-50 d-block">
+                <i class="fas fa-copyright"></i> 2026 Archify
+            </small>
+            <small class="text-white-50">Version 1.0</small>
+        </div>
+    </div>
+</nav>

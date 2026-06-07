@@ -1,0 +1,427 @@
+{% extends 'base/main.html' %}
+
+{% block title %}{{ project.title }} - Archify{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item active">{{ project.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Project Info Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Project Information</h5>
+                {% if can_edit %}
+                <a href="{% url 'project_update' project.id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i> Edit
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h3 class="mb-3">{{ project.title }}</h3>
+                <p>{{ project.description }}</p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><i class="fas fa-map-marker-alt text-primary me-2"></i> <strong>Location:</strong> {{ project.site_address }}</p>
+                        <p><i class="fas fa-city text-primary me-2"></i> <strong>City:</strong> {{ project.city }}, {{ project.state }}</p>
+                        <p><i class="fas fa-chart-line text-primary me-2"></i> <strong>Status:</strong> 
+                            <span class="badge bg-{% if project.status == 'COMPLETED' %}success{% elif project.status == 'IN_PROGRESS' %}primary{% elif project.status == 'CANCELLED' %}danger{% elif project.status == 'ON_HOLD' %}warning{% else %}secondary{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="fas fa-ruler-combined text-primary me-2"></i> <strong>Plot Area:</strong> {{ project.plot_area_sqft }} sq ft</p>
+                        <p><i class="fas fa-dollar-sign text-primary me-2"></i> <strong>Budget:</strong> ₹{{ project.estimated_budget|floatformat:2 }}</p>
+                        <p><i class="fas fa-percent text-primary me-2"></i> <strong>Progress:</strong> {{ project.progress_percent }}%</p>
+                    </div>
+                </div>
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar" style="width: {{ project.progress_percent }}%"></div>
+                </div>
+            </div>
+        </div>
+        
+       <!-- Building Plans Section -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-drafting-compass me-2"></i>
+            Building Plans
+            <span class="badge bg-secondary ms-2">{{ building_plans|length }} Plans</span>
+        </h5>
+        {% if user.role == 'ARCHITECT' and project.architect == user %}
+            <a href="{% url 'plan_upload' project.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-upload me-1"></i> Upload Plan
+            </a>
+        {% elif user.role == 'CIVIL_ENGINEER' and project.civil_engineer == user %}
+            <a href="{% url 'plan_upload' project.id %}" class="btn btn-sm btn-info">
+                <i class="fas fa-upload me-1"></i> Upload Structural Plan
+            </a>
+        {% elif user.role == 'CONTRACTOR' and project.contractor == user %}
+            <a href="{% url 'plan_upload' project.id %}" class="btn btn-sm btn-success">
+                <i class="fas fa-upload me-1"></i> Upload Construction Plan
+            </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if building_plans %}
+            <div class="row">
+                {% for plan in building_plans %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card plan-card h-100">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{% if plan.plan_type == 'STRUCTURAL' %}danger{% elif plan.plan_type == 'FLOOR_PLAN' %}success{% else %}primary{% endif %}">
+                                {{ plan.get_plan_type_display }}
+                            </span>
+                            <span class="badge bg-{% if plan.approval_status == 'APPROVED' %}success{% elif plan.approval_status == 'REJECTED' %}danger{% elif plan.approval_status == 'SUBMITTED' %}warning{% else %}secondary{% endif %}">
+                                {{ plan.get_approval_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="plan-preview mb-3">
+                                {% if plan.file.url|lower|slice:"-4:" == ".pdf" %}
+                                    <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                {% elif plan.file.url|lower|slice:"-4:" in ".jpg.png" %}
+                                    <img src="{{ plan.file.url }}" class="img-fluid rounded" style="max-height: 150px; width: auto;">
+                                {% else %}
+                                    <i class="fas fa-file-alt fa-4x text-primary"></i>
+                                {% endif %}
+                            </div>
+                            <h6 class="card-title">{{ plan.title }}</h6>
+                            <p class="small text-muted">
+                                <i class="fas fa-user me-1"></i> {{ plan.uploaded_by.get_full_name|default:plan.uploaded_by.username }}
+                                <br>
+                                <i class="fas fa-code-branch me-1"></i> Version {{ plan.version }}
+                                <br>
+                                <i class="fas fa-calendar me-1"></i> {{ plan.created_at|date:"M d, Y" }}
+                            </p>
+                            {% if plan.client_notes %}
+                            <div class="alert alert-info small p-2">
+                                <i class="fas fa-comment me-1"></i> {{ plan.client_notes|truncatewords:15 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{{ plan.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{{ plan.file.url }}" class="btn btn-sm btn-outline-secondary" download>
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                {% if user.role == 'CIVIL_ENGINEER' and plan.plan_type == 'STRUCTURAL' and plan.approval_status == 'SUBMITTED' %}
+                                <a href="{% url 'plan_approval' plan.id %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-check-double"></i> Review
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-drafting-compass fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No plans uploaded yet.</p>
+                {% if user.role == 'ARCHITECT' and project.architect == user %}
+                <a href="{% url 'plan_upload' project.id %}" class="btn btn-primary">
+                    <i class="fas fa-upload me-2"></i>Upload First Plan
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .plan-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .plan-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .plan-preview {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .btn-group .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+        
+<!-- Milestones Section -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-flag-checkered me-2"></i>
+            Project Milestones
+            <span class="badge bg-secondary ms-2">{{ milestones|length }} Milestones</span>
+        </h5>
+        <!-- Show Add Milestone button for professionals -->
+        {% if user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR,ADMIN' %}
+        <a href="{% url 'milestone_create' project.id %}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i> Add Milestone
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if milestones %}
+            <div class="timeline">
+                {% for milestone in milestones %}
+                <div class="timeline-item mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="timeline-marker {% if milestone.is_completed %}bg-success{% else %}bg-warning{% endif %}">
+                                <i class="fas {% if milestone.is_completed %}fa-check{% else %}fa-hourglass-half{% endif %} text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ milestone.title }}</h6>
+                                <span class="badge {% if milestone.is_completed %}bg-success{% else %}bg-primary{% endif %}">
+                                    {{ milestone.progress_percent }}% Complete
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-2">{{ milestone.description|default:"No description" }}</p>
+                            <div class="row small">
+                                <div class="col-md-6">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <strong>Planned:</strong> {{ milestone.planned_start_date|date:"M d, Y"|default:"Not set" }} - {{ milestone.planned_end_date|date:"M d, Y"|default:"Not set" }}
+                                </div>
+                                {% if milestone.actual_start_date %}
+                                <div class="col-md-6">
+                                    <i class="fas fa-check-circle me-1 text-success"></i>
+                                    <strong>Actual:</strong> {{ milestone.actual_start_date|date:"M d, Y" }} - {{ milestone.actual_end_date|date:"M d, Y"|default:"In progress" }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div class="progress-bar" style="width: {{ milestone.progress_percent }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-flag-checkered fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No milestones defined yet.</p>
+                {% if user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR,ADMIN' %}
+                <a href="{% url 'milestone_create' project.id %}" class="btn btn-sm btn-primary">
+    <i class="fas fa-plus me-1"></i> Add Milestone
+</a>
+
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+        
+        <!-- Site Updates Section -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-hard-hat me-2"></i>
+            Site Updates
+            <span class="badge bg-secondary ms-2">{{ site_updates|length }} Updates</span>
+        </h5>
+        <!-- Show Post Update button for professionals -->
+        {% if user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR,ADMIN' %}
+       <a href="{% url 'site_update_create' project.id %}" class="btn btn-sm btn-success">
+    <i class="fas fa-plus me-1"></i> Post Update
+</a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if site_updates %}
+            <div class="timeline">
+                {% for update in site_updates %}
+                <div class="timeline-item mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="timeline-marker bg-info">
+                                <i class="fas fa-camera text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ update.title }}</h6>
+                                <small class="text-muted">{{ update.update_date|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-2">{{ update.description }}</p>
+                            <div class="row small">
+                                <div class="col-md-4">
+                                    <i class="fas fa-user me-1"></i> Posted by: {{ update.posted_by.get_full_name|default:update.posted_by.username }}
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-cloud-sun me-1"></i> Weather: {{ update.weather_note|default:"Not recorded" }}
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-chart-line me-1"></i> Progress: {{ update.progress_percent }}%
+                                </div>
+                            </div>
+                            {% if update.milestone %}
+                            <div class="mt-2">
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-flag-checkered me-1"></i> {{ update.milestone.title }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% if update.images.all %}
+                            <div class="row mt-2">
+                                {% for img in update.images.all|slice:":3" %}
+                                <div class="col-4 col-md-2">
+                                    <a href="{{ img.image.url }}" target="_blank">
+                                        <img src="{{ img.image.url }}" class="img-fluid rounded" style="height: 60px; width: 100%; object-fit: cover;">
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-hard-hat fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No site updates yet.</p>
+                {% if user.role in 'ARCHITECT,CIVIL_ENGINEER,CONTRACTOR,ADMIN' %}
+                <a href="{% url 'site_update_create' project.id %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> Post First Update
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.timeline-marker {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.timeline-item {
+    border-left: 2px dashed #dee2e6;
+    padding-left: 20px;
+    margin-left: 17px;
+}
+.timeline-item:last-child {
+    border-left: none;
+}
+</style>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Team Members -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Team Members</h5>
+            </div>
+            <div class="card-body">
+                {% if project.architect %}
+                <div class="mb-3">
+                    <i class="fas fa-drafting-compass text-primary me-2"></i>
+                    <strong>Architect:</strong> {{ project.architect.get_full_name }}
+                </div>
+                {% endif %}
+                {% if project.civil_engineer %}
+                <div class="mb-3">
+                    <i class="fas fa-hard-hat text-primary me-2"></i>
+                    <strong>Civil Engineer:</strong> {{ project.civil_engineer.get_full_name }}
+                </div>
+                {% endif %}
+                {% if project.contractor %}
+                <div class="mb-3">
+                    <i class="fas fa-tools text-primary me-2"></i>
+                    <strong>Contractor:</strong> {{ project.contractor.get_full_name }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Materials Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Materials</h5>
+            </div>
+            <div class="card-body">
+                {% if materials %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in materials|slice:":5" %}
+                            <tr>
+                                <td>{{ material.material.name }}</td>
+                                <td>{{ material.quantity_required }} {{ material.material.unit }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No materials added.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Workers Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-hard-hat me-2"></i>Workers</h5>
+            </div>
+            <div class="card-body">
+                {% if workers %}
+                <div class="list-group">
+                    {% for assignment in workers|slice:":5" %}
+                    <div class="list-group-item">
+                        <strong>{{ assignment.worker.full_name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ assignment.worker.get_worker_type_display }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No workers assigned.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

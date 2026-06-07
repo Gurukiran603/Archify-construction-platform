@@ -1,0 +1,83 @@
+{% extends 'base/main.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Material{% else %}Add Material{% endif %} - Archify{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if form.instance.pk %}Edit Material{% else %}Add New Material{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            Material Name <span class="text-danger">*</span>
+                        </label>
+                        {{ form.name }}
+                        <small class="form-text text-muted">Example: Cement, Steel, Bricks, etc.</small>
+                        {% for error in form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.unit.id_for_label }}" class="form-label">
+                            Unit of Measurement <span class="text-danger">*</span>
+                        </label>
+                        {{ form.unit }}
+                        <small class="form-text text-muted">Examples: bags, kg, pieces, cubic feet, meters, liters</small>
+                        {% for error in form.unit.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                        <small class="form-text text-muted">Optional description of the material</small>
+                        {% for error in form.description.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Common Units:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Bulk materials:</strong> bags, kg, tons, cubic feet</li>
+                            <li><strong>Countable items:</strong> pieces, numbers, sets</li>
+                            <li><strong>Length items:</strong> meters, feet, yards</li>
+                            <li><strong>Area items:</strong> sq ft, sq meters</li>
+                            <li><strong>Volume items:</strong> liters, gallons</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'material_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{% if form.instance.pk %}Update Material{% else %}Save Material{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Attendance - Archify{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-2">Worker Attendance</h1>
+                <p class="text-muted">Track daily attendance for construction projects</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Selection First -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Select Project</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3" action="{% url 'attendance_mark' 0 %}">
+                    <div class="col-md-8">
+                        <select name="project_id" id="projectSelect" class="form-select form-select-lg" required>
+                            <option value="">-- Select a Project --</option>
+                            {% for project in user_projects %}
+                            <option value="{{ project.id }}">{{ project.title }} ({{ project.city }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="goToAttendance" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-calendar-check me-2"></i>Mark Attendance
+                        </button>
+                    </div>
+                </form>
+                
+                {% if not user_projects %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No projects found. Please assign projects to workers first.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Attendance Records -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Attendance Records</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Worker</th>
+                                <th>Status</th>
+                                <th>Marked By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance in recent_attendances %}
+                            <tr>
+                                <td>{{ attendance.attendance_date|date:"Y-m-d" }}</td>
+                                <td>{{ attendance.project_worker.project.title }}</td>
+                                <td>{{ attendance.project_worker.worker.full_name }}</td>
+                                <td>
+                                    <span class="badge bg-{% if attendance.status == 'PRESENT' %}success{% elif attendance.status == 'ABSENT' %}danger{% elif attendance.status == 'HALF_DAY' %}warning{% else %}info{% endif %}">
+                                        {{ attendance.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ attendance.marked_by.get_full_name|default:attendance.marked_by.username }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                    <p>No attendance records found.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('goToAttendance').addEventListener('click', function() {
+        const projectId = document.getElementById('projectSelect').value;
+        if (projectId) {
+            window.location.href = "{% url 'attendance_mark' 0 %}".replace('0', projectId);
+        } else {
+            alert('Please select a project first');
+        }
+    });
+</script>
+{% endblock %}

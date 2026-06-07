@@ -1,0 +1,132 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Project Workers - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Workers</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Workers Assigned to {{ project.title }}</h1>
+                <p class="text-muted">Manage worker assignments for this project</p>
+            </div>
+            <a href="{% url 'project_worker_assign' project.id %}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Assign Worker
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Workers Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Worker Name</th>
+                                <th>Type</th>
+                                <th>Daily Wage</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ assignment.worker.full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ assignment.worker.phone_number }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ assignment.worker.get_worker_type_display }}</span>
+                                </td>
+                                <td>
+                                    {% if assignment.custom_daily_wage %}
+                                    ₹{{ assignment.custom_daily_wage|floatformat:2 }}
+                                    <br>
+                                    <small class="text-muted">(Custom)</small>
+                                    {% else %}
+                                    ₹{{ assignment.worker.daily_wage|floatformat:2 }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ assignment.start_date|date:"M d, Y" }}</td>
+                                <td>{{ assignment.end_date|date:"M d, Y"|default:"Ongoing" }}</td>
+                                <td>
+                                    {% if assignment.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'attendance_list' project.id %}?worker={{ assignment.worker.id }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </a>
+                                    <a href="{% url 'wage_payment_list' project.id %}?worker={{ assignment.worker.id }}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-money-bill"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted">No workers assigned to this project yet.</p>
+                                    <a href="{% url 'project_worker_assign' project.id %}" class="btn btn-sm btn-primary">Assign Worker</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Workers Section -->
+{% if available_workers %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Available Workers</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for worker in available_workers|slice:":6" %}
+                    <div class="col-md-4 mb-2">
+                        <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                            <div>
+                                <strong>{{ worker.full_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ worker.get_worker_type_display }}</small>
+                            </div>
+                            <a href="{% url 'project_worker_assign' project.id %}?worker={{ worker.id }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-plus"></i> Assign
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

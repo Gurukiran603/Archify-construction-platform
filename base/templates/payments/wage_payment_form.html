@@ -1,0 +1,96 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Create Wage Payment - {{ project_worker.project.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    Create Wage Payment for {{ project_worker.worker.full_name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-secondary mb-4">
+                    <div class="row">
+                        <div class="col-6">
+                            <small>Worker:</small>
+                            <br>
+                            <strong>{{ project_worker.worker.full_name }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small>Daily Wage:</small>
+                            <br>
+                            <strong>₹{{ project_worker.custom_daily_wage|default:project_worker.worker.daily_wage|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                            <span class="text-danger">*</span>
+                            {% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-calculator me-2"></i>
+                        <strong>Auto-calculation:</strong> Total Amount = Total Days × Wage per Day
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'wage_payment_list' project_worker.project.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Create Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-calculate total amount
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalDaysInput = document.querySelector('input[name="total_days"]');
+        const wagePerDayInput = document.querySelector('input[name="wage_per_day"]');
+        const totalAmountDisplay = document.createElement('div');
+        totalAmountDisplay.className = 'alert alert-success mt-2';
+        totalAmountDisplay.innerHTML = '<strong>Calculated Total: ₹0.00</strong>';
+        
+        if (totalDaysInput && wagePerDayInput) {
+            wagePerDayInput.parentNode.appendChild(totalAmountDisplay);
+            
+            function updateTotal() {
+                const days = parseFloat(totalDaysInput.value) || 0;
+                const wage = parseFloat(wagePerDayInput.value) || 0;
+                const total = days * wage;
+                totalAmountDisplay.innerHTML = `<strong>Calculated Total: ₹${total.toFixed(2)}</strong>`;
+            }
+            
+            totalDaysInput.addEventListener('input', updateTotal);
+            wagePerDayInput.addEventListener('input', updateTotal);
+            updateTotal();
+        }
+    });
+</script>
+{% endblock %}

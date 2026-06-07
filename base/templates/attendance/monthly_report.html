@@ -1,0 +1,234 @@
+{% extends 'base/main.html' %}
+{% load mathfilters %}
+
+{% block title %}Monthly Attendance Report - Archify{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2">Monthly Attendance Report</h1>
+                <p class="text-muted">View worker attendance summary by month</p>
+            </div>
+            <a href="{% url 'attendance_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Attendance
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Month/Year Selector -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Select Month</label>
+                        <select name="month" class="form-select">
+                            {% for m_num, m_name in months %}
+                            <option value="{{ m_num }}" {% if selected_month == m_num %}selected{% endif %}>
+                                {{ m_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Select Year</label>
+                        <select name="year" class="form-select">
+                            {% for y in years %}
+                            <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                                {{ y }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-chart-line me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+            <h3>{{ total_workers }}</h3>
+            <p class="text-muted mb-0">Total Workers</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <h3>{{ total_present_days }}</h3>
+            <p class="text-muted mb-0">Present Days</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h3>{{ total_half_days }}</h3>
+            <p class="text-muted mb-0">Half Days</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-calendar-times fa-2x text-danger mb-2"></i>
+            <h3>{{ total_absent_days }}</h3>
+            <p class="text-muted mb-0">Absent Days</p>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Worker Report -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Attendance Details - {{ month_name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="attendanceTable">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>Worker Name</th>
+                                <th>Project</th>
+                                <th>Worker Type</th>
+                                <th>Daily Wage</th>
+                                <th>Present</th>
+                                <th>Half Day</th>
+                                <th>Paid Leave</th>
+                                <th>Absent</th>
+                                <th>Total Days</th>
+                                <th>Attendance %</th>
+                                <th>Total Wage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for worker in worker_summaries %}
+                            <tr>
+                                <td>
+                                    <strong>{{ worker.worker.full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ worker.worker.phone_number }}</small>
+                                </td>
+                                <td>{{ worker.project.title|truncatechars:20 }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ worker.worker.get_worker_type_display }}</span>
+                                </td>
+                                <td>₹{{ worker.daily_wage|floatformat:0 }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ worker.present }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ worker.half_day }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ worker.paid_leave }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger">{{ worker.absent }}</span>
+                                </td>
+                                <td>{{ worker.total_days }}</td>
+                                <td>
+                                    <div class="progress" style="width: 80px;">
+                                        <div class="progress-bar {% if worker.attendance_percentage >= 75 %}bg-success{% elif worker.attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             style="width: {{ worker.attendance_percentage }}%">
+                                        </div>
+                                    </div>
+                                    <small>{{ worker.attendance_percentage }}%</small>
+                                </td>
+                                <td>
+                                    <strong>₹{{ worker.total_wage|floatformat:0 }}</strong>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center py-4">
+                                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No attendance data found for {{ month_name }}.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <td colspan="4"><strong>TOTALS</strong></td>
+                                <td><strong>{{ total_present_days }}</strong></td>
+                                <td><strong>{{ total_half_days }}</strong></td>
+                                <td><strong>{{ total_leave_days }}</strong></td>
+                                <td><strong>{{ total_absent_days }}</strong></td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Buttons -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-end gap-2">
+            <button onclick="exportToExcel()" class="btn btn-success">
+                <i class="fas fa-file-excel me-2"></i>Export to Excel
+            </button>
+            <button onclick="window.print()" class="btn btn-secondary">
+                <i class="fas fa-print me-2"></i>Print Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    @media print {
+        .btn, .navbar-custom, #sidebar, footer, .card-header .btn {
+            display: none !important;
+        }
+        #content {
+            margin-left: 0 !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>
+
+<script>
+    function exportToExcel() {
+        let table = document.getElementById('attendanceTable');
+        let html = table.outerHTML;
+        let blob = new Blob([html], {type: 'application/vnd.ms-excel'});
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'attendance_report_{{ month_name }}.xls';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+</script>
+{% endblock %}
