@@ -9,14 +9,26 @@ from django.contrib.messages import constants as messages
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5lrb*m7t9iup*s!*e^p+4xh+=fa_)0fmn1f)cgi-xfy6_e45%w'
+# # SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY = 'django-insecure-5lrb*m7t9iup*s!*e^p+4xh+=fa_)0fmn1f)cgi-xfy6_e45%w'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts for development
+from decouple import config
 
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+# ALLOWED_HOSTS = ['*']  # Allow all hosts for development
+
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "archify-construction-platform.onrender.com",
+    ".onrender.com",
+]
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -35,9 +47,12 @@ INSTALLED_APPS = [
     # Local apps
     'base',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+
+    # WhiteNoise - Serves static files in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,12 +111,19 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+# =====================================
+# Static Files Configuration
+# =====================================
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_URL = "/static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -174,3 +196,21 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# =====================================
+# Production Security Settings
+# =====================================
+
+SECURE_BROWSER_XSS_FILTER = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = "DENY"
+
+CSRF_COOKIE_SECURE = not DEBUG
+
+SESSION_COOKIE_SECURE = not DEBUG
+
+SECURE_SSL_REDIRECT = not DEBUG
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
