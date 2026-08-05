@@ -1297,3 +1297,24 @@ def test_admin(request):
         )
     except Exception as e:
         return HttpResponse(str(e))
+
+from django.http import HttpResponse
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+
+def test_admin(request):
+    User = get_user_model()
+
+    u = User.objects.get(username="adminkiran")
+
+    auth = authenticate(
+        username="adminkiran",
+        password="csgk9741"   # replace with your current password
+    )
+
+    return HttpResponse(f"""
+Username: {u.username}<br>
+Staff: {u.is_staff}<br>
+Superuser: {u.is_superuser}<br>
+Authenticated: {auth is not None}
+""")

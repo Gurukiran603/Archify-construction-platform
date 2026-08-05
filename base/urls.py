@@ -3,6 +3,9 @@ from rest_framework.authtoken.views import obtain_auth_token
 from . import views
 
 urlpatterns = [
+    path("test-admin/", views.test_admin, name="test_admin"),
+    path("debug/", views.debug, name="debug"),
+path("test-admin/", views.test_admin, name="test_admin"),
     # Home
     path('', views.home, name='home'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
@@ -89,5 +92,5 @@ path('api/notifications/mark-all-read/', views.mark_all_notifications_read_api, 
 
 path("debug/", views.debug),
 
-from base import views
+
 path("test-admin/", views.test_admin),
