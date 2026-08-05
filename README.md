@@ -8,7 +8,7 @@
 Archify is a comprehensive construction management platform that connects Clients, Architects, Civil Engineers, Contractors, and Workers on a single platform. It streamlines project management, plan approvals, workforce management, and payment processing.
 
 ## 🚀 Live Demo
-[View Live Site]([https://archify.onrender.com](https://archify-construction-platform.onrender.com)) *(after deployment)*
+[View Live Site](https://archify-construction-platform.onrender.com) *(after deployment)*
 
 ## 📋 Features
 
