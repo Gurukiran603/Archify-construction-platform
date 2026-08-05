@@ -86,3 +86,8 @@ path('api/notifications/<uuid:notification_id>/read/', views.mark_notification_r
 path('api/notifications/mark-all-read/', views.mark_all_notifications_read_api, name='api_notifications_read_all'),
 ]
 
+
+path("debug/", views.debug),
+
+from base import views
+path("test-admin/", views.test_admin),

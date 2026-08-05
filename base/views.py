@@ -1256,3 +1256,44 @@ def handler500(request):
 
 def handler403(request, exception):
     return render(request, 'errors/403.html', status=403)
+
+from django.http import HttpResponse
+from django.db import connection
+from django.contrib.auth import get_user_model
+
+def debug(request):
+    User = get_user_model()
+
+    users = [
+        f"{u.username} | staff={u.is_staff} | super={u.is_superuser}"
+        for u in User.objects.all()
+    ]
+
+    return HttpResponse(
+        f"""
+        ENGINE: {connection.settings_dict['ENGINE']}<br>
+        DB: {connection.settings_dict['NAME']}<br><br>
+        USERS:<br>
+        {'<br>'.join(users)}
+        """
+    )
+
+
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+
+def test_admin(request):
+    User = get_user_model()
+
+    try:
+        u = User.objects.get(username="adminkiran")
+        return HttpResponse(
+            f"""
+            Username: {u.username}<br>
+            Staff: {u.is_staff}<br>
+            Superuser: {u.is_superuser}<br>
+            Active: {u.is_active}
+            """
+        )
+    except Exception as e:
+        return HttpResponse(str(e))
